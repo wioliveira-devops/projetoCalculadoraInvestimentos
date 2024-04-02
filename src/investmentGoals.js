@@ -1,4 +1,4 @@
-function convertToMonthlyReturnRate(earlyReturnRate) {
+function convertToMonthlyReturnRate(yearReturnRate) {
 	return yearReturnRate ** (1 / 12);
 }
 
@@ -27,7 +27,7 @@ export function generateReturnsArray(
 	const referenceInvestmentObject = {
 		investedAmount: startingAmount,
 		interestReturns: 0,
-		totalInterestReturn: 0,
+		totalInterestReturns: 0,
 		month: 0,
 		totalAmount: startingAmount,
 	};
@@ -42,14 +42,14 @@ export function generateReturnsArray(
 			returnsArray[timeReference - 1].totalAmount * finalReturnRate +
 			monthlyContribution;
 		const interestReturns =
-			returnsArray[timeReference - 1].totalAmount * finalReturnRate;
+			returnsArray[timeReference - 1].totalAmount * (finalReturnRate - 1);
 		const investedAmount =
 			startingAmount + monthlyContribution * timeReference;
-		const totalInterestReturn = totalAmount - investedAmount;
+		const totalInterestReturns = totalAmount - investedAmount;
 		returnsArray.push({
 			investedAmount,
 			interestReturns,
-			totalInterestReturn,
+			totalInterestReturns,
 			month: timeReference,
 			totalAmount,
 		});
