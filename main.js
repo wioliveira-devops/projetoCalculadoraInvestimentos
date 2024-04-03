@@ -1,5 +1,6 @@
 import { generateReturnsArray } from './src/investmentGoals.js';
 import { Chart } from 'chart.js/auto';
+import { createTable } from './src/table.js';
 
 const finalMoneyChart = document.getElementById('final-money-distribution');
 const progressionChart = document.getElementById('progression');
@@ -9,7 +10,34 @@ const clearFormButton = document.getElementById('clear-form');
 let doughnutChartReference = {};
 let progressionChartReference = {};
 
-function formatCurrency(value) {
+const columnsArray = [
+	{ columnLabel: 'Mês', accessor: 'month' },
+	{
+		columnLabel: 'Total investido',
+		accessor: 'investedAmount',
+		format: (numberInfo) => formatCurrencyToTable(numberInfo),
+	},
+	{
+		columnLabel: 'Rendimento Mensal',
+		accessor: 'interestReturns',
+		format: (numberInfo) => formatCurrencyToTable(numberInfo),
+	},
+	{
+		columnLabel: 'Rendimento Total',
+		accessor: 'totalInterestReturns',
+		format: (numberInfo) => formatCurrencyToTable(numberInfo),
+	},
+	{
+		columnLabel: 'Quantia Total',
+		accessor: 'totalAmount',
+		format: (numberInfo) => formatCurrencyToTable(numberInfo),
+	},
+];
+
+function formatCurrencyToTable(value) {
+	return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+function formatCurrencyToGraph(value) {
 	return value.toFixed(2);
 }
 
@@ -54,12 +82,12 @@ function renderProgression(evt) {
 			datasets: [
 				{
 					data: [
-						formatCurrency(finalInvestmentObject.investedAmount),
-						formatCurrency(
+						formatCurrencyToGraph(finalInvestmentObject.investedAmount),
+						formatCurrencyToGraph(
 							finalInvestmentObject.totalInterestReturns *
 								(1 - taxRate / 100)
 						),
-						formatCurrency(
+						formatCurrencyToGraph(
 							finalInvestmentObject.totalInterestReturns *
 								(taxRate / 100)
 						),
@@ -74,41 +102,42 @@ function renderProgression(evt) {
 			],
 		},
 	});
-}
-
-progressionChartReference = new Chart(progressionChart, {
-	type: 'bar',
-	data: {
-		labels: returnsArray.map((investmentObject) => investmentObject.month),
-		datasets: [
-			{
-				label: 'Total Investido',
-				data: returnsArray.map((finalInvestmentObject) =>
-					formatCurrency(finalInvestmentObject.investedAmount)
-				),
-				backgroundColor: 'rgb(255, 99, 132)',
-			},
-			{
-				label: 'Retorno de Investimento',
-				data: returnsArray.map((investmentObject) =>
-					formatCurrency(investmentObject.interestReturn)
-				),
-				backgroundColor: 'rgb(54, 162, 235)',
-			},
-		],
-	},
-	options: {
-		responsive: true,
-		scales: {
-			x: {
-				stacked: true,
-			},
-			y: {
-				stacked: true,
+	progressionChartReference = new Chart(progressionChart, {
+		type: 'bar',
+		data: {
+			labels: returnsArray.map((investmentObject) => investmentObject.month),
+			datasets: [
+				{
+					label: 'Total Investido',
+					data: returnsArray.map((finalInvestmentObject) =>
+					formatCurrencyToGraph(finalInvestmentObject.investedAmount)
+					),
+					backgroundColor: 'rgb(255, 99, 132)',
+				},
+				{
+					label: 'Retorno de Investimento',
+					data: returnsArray.map((investmentObject) =>
+					formatCurrencyToGraph(investmentObject.interestReturns)
+					),
+					backgroundColor: 'rgb(54, 162, 235)',
+				},
+			],
+		},
+		options: {
+			responsive: true,
+			scales: {
+				x: {
+					stacked: true,
+				},
+				y: {
+					stacked: true,
+				},
 			},
 		},
-	},
-});
+	});
+
+	createTable(columnsArray, returnsArray, 'results-table');
+}
 
 function isObjectEmpty(obj) {
 	return Object.keys(obj).length === 0;
@@ -177,7 +206,19 @@ for (const formElement of form) {
 	}
 }
 
-// form.addEventListener('submit', renderProgression);
+const mainEl = document.querySelector('main');
+const carouselEl = document.getElementById('carousel');
+const nextButton = document.getElementById('slide-arrow-next');
+const previousButton = document.getElementById('slide-arrow-previous');
+
+nextButton.addEventListener('click', () => {
+	carouselEl.scrollLeft += mainEl.clientWidth;
+});
+previousButton.addEventListener('click', () => {
+	carouselEl.scrollLeft -= mainEl.clientWidth;
+});
+
+form.addEventListener('submit', renderProgression);
 // calculateButton.addEventListener('click', renderProgression);
 
 clearFormButton.addEventListener('click', clearForm);
